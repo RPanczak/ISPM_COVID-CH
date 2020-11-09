@@ -1,0 +1,159 @@
+---
+title: "COVID-SEP project"
+description: "Analyses of FOPH data - testing"
+date: "`r Sys.Date()`"
+author:
+  - name: Radoslaw Panczak 
+    url: https://github.com/RPanczak
+    affiliation: ISPM
+    affiliation_url: https://www.ispm.unibe.ch/
+    orcid_id: 0000-0001-5141-683X
+# bibliography: biblio.bib
+output:
+  distill::distill_article:
+    highlight: pygments
+    toc: true
+    toc_depth: 1
+    number_sections: true
+editor_options: 
+  chunk_output_type: console
+---
+
+<!-- ------------------------------------------------------------ --> 
+<!-- ------------------------------------------------------------ --> 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, 
+                      # fig.width=8, fig.height=6, 
+                      # out.width="800px", out.height="600px",
+                      dpi=300)
+
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+
+options(scipen=999)
+set.seed(12345)
+
+library(pacman) 
+p_load(dplyr, tidyr, readr, haven, scales, ggplot2,
+       sjmisc, sjPlot,
+       mgcv, gratia, tidymv, mgcViz,
+       sf, tmap)
+```
+
+<!-- ------------------------------------------------------------ --> 
+
+# Raw data 
+
+## Data structure
+
+Publicly available testing data are daily aggregated, splitting by `Outcome_tests`:
+
+```{r echo=FALSE, layout="l-body-outset"}
+positivity <- read_rds("data/BAG-open/positivity.rds")
+# View(positivity)
+
+positivity %>% 
+  slice(1:4)
+```
+
+## Example: first case:
+
+```{r echo=FALSE}
+positivity %>% 
+  filter(Date == as.Date("2020-02-24"))
+```
+
+# Temporal overview
+
+## Daily tests
+
+```{r echo=FALSE, layout="l-body-outset"}
+positivity %>% 
+  group_by(Date) %>% 
+  summarize(Number_of_tests = sum(Number_of_tests)) %>% 
+  ggplot() + 
+  geom_col(aes(x = Date, y = Number_of_tests)) + 
+  xlab("") + ylab("Number of tests")
+```
+
+## Weekly overview:
+
+```{r echo=FALSE, layout="l-body-outset"}
+positivity %>% 
+  # filter(Week > 4) %>% 
+  group_by(Week) %>% 
+  summarize(Number_of_tests = sum(Number_of_tests)) %>% 
+  ggplot() + 
+  geom_col(aes(x = as.factor(Week), y = Number_of_tests)) + 
+  xlab("Week") + ylab("Number of tests")
+```
+
+# Time adjusted GAM models 
+
+## Daily data
+
+```{r}
+min_date <- as.numeric(min(positivity$Date))
+
+tests_daily <- positivity %>% 
+  # filter(Week > 4) %>% 
+  group_by(Date) %>% 
+  summarize(Number_of_tests = sum(Number_of_tests)) %>% 
+  ungroup() %>% 
+  arrange(Date) %>% 
+  mutate(Day = as.numeric(Date) - min_date + 1)
+
+tests_daily %>% 
+  ggplot(aes(Number_of_tests)) +
+  geom_histogram(binwidth = 1000)
+```
+
+
+```{r}
+model_time_day_01 <- gam(Number_of_tests ~  s(Day), 
+                          data = tests_daily, 
+                          family = gaussian(link = "identity"))
+```
+
+
+```{r, layout="l-body-outset"}
+summary(model_time_day_01)
+# gam.check(model_time_day_01)
+# plot(model_time_day_01, pages=1)
+
+draw(model_time_day_01)
+appraise(model_time_day_01)
+```
+
+## Weekly data
+
+```{r}
+tests_weekly <- positivity %>% 
+  # filter(Week > 4) %>% 
+  group_by(Week) %>% 
+  summarize(Number_of_tests = sum(Number_of_tests))
+
+tests_weekly %>% 
+  ggplot(aes(Number_of_tests)) +
+  geom_histogram(binwidth = 10000)
+```
+
+
+```{r}
+model_time_week_01 <- gam(Number_of_tests ~  s(Week), 
+                          data = tests_weekly, 
+                          family = gaussian(link = "identity"))
+```
+
+
+```{r, layout="l-body-outset"}
+summary(model_time_week_01)
+# gam.check(model_time_week_01)
+# plot(model_time_week_01, pages=1)
+
+draw(model_time_week_01)
+appraise(model_time_week_01)
+```
+
+
+

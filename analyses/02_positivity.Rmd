@@ -34,9 +34,9 @@ options(scipen=999)
 set.seed(12345)
 
 library(pacman) 
-p_load(dplyr, tidyr, readr, haven, scales, ggplot2,
+p_load(dplyr, tidyr, readr, scales, ggplot2,
        sjmisc, sjPlot,
-       mgcv, gratia, tidymv, mgcViz,
+       mgcv, gratia,
        sf, tmap)
 ```
 
@@ -74,6 +74,8 @@ positivity_wide %>%
   filter(Date == as.Date("2020-02-24"))
 ```
 
+<!-- ------------------------------------------------------------ --> 
+
 # Temporal overview
 
 ## Daily tests
@@ -98,6 +100,8 @@ positivity_wide %>%
   geom_col(aes(x = as.factor(Week), y = Positivity)) + 
   xlab("Week") + ylab("Number of tests")
 ```
+
+<!-- ------------------------------------------------------------ --> 
 
 # Time adjusted GAM models 
 

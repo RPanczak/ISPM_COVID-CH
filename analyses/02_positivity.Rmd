@@ -1,0 +1,196 @@
+---
+title: "COVID-SEP project"
+description: "Analyses of FOPH data - positivity"
+date: "`r Sys.Date()`"
+author:
+  - name: Radoslaw Panczak 
+    url: https://github.com/RPanczak
+    affiliation: ISPM
+    affiliation_url: https://www.ispm.unibe.ch/
+    orcid_id: 0000-0001-5141-683X
+# bibliography: biblio.bib
+output:
+  distill::distill_article:
+    highlight: pygments
+    toc: true
+    toc_depth: 1
+    number_sections: true
+editor_options: 
+  chunk_output_type: console
+---
+
+<!-- ------------------------------------------------------------ --> 
+<!-- ------------------------------------------------------------ --> 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, 
+                      # fig.width=8, fig.height=6, 
+                      # out.width="800px", out.height="600px",
+                      dpi=300)
+
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+
+options(scipen=999)
+set.seed(12345)
+
+library(pacman) 
+p_load(dplyr, tidyr, readr, haven, scales, ggplot2,
+       sjmisc, sjPlot,
+       mgcv, gratia, tidymv, mgcViz,
+       sf, tmap)
+```
+
+<!-- ------------------------------------------------------------ --> 
+
+# Raw data 
+
+## Data structure
+
+Publicly available testing data are daily aggregated, splitting by `Outcome_tests`:
+
+```{r echo=FALSE, layout="l-body-outset"}
+positivity <- read_rds("data/BAG-open/positivity.rds")
+# View(positivity)
+
+positivity %>% 
+  slice(1:4)
+```
+
+## Positivity - from wide format
+
+```{r}
+positivity_wide <- positivity %>% 
+  pivot_wider(names_from = Outcome_tests, values_from = Number_of_tests) %>% 
+  mutate(Positivity = Positive / (Positive + Negative))
+
+positivity_wide %>% 
+  slice(1:2)
+```
+  
+## Example: first case:
+
+```{r echo=FALSE}
+positivity_wide %>% 
+  filter(Date == as.Date("2020-02-24"))
+```
+
+# Temporal overview
+
+## Daily tests
+
+```{r echo=FALSE, layout="l-body-outset"}
+positivity_wide %>% 
+  ggplot() + 
+  geom_col(aes(x = Date, y = Positivity)) + 
+  xlab("") + ylab("Positivity")
+```
+
+## Weekly overview:
+
+```{r echo=FALSE, layout="l-body-outset"}
+positivity_wide %>% 
+  # filter(Week > 4) %>% 
+  group_by(Week) %>% 
+  summarize(Positive = sum(Positive),
+            Negative = sum(Negative),
+            Positivity = Positive / (Positive + Negative)) %>% 
+  ggplot() + 
+  geom_col(aes(x = as.factor(Week), y = Positivity)) + 
+  xlab("Week") + ylab("Number of tests")
+```
+
+# Time adjusted GAM models 
+
+## Daily data
+
+```{r}
+min_date <- as.numeric(min(positivity_wide$Date))
+
+positivity_wide %<>% 
+  # filter(Week > 4) %>% 
+  arrange(Date) %>% 
+  mutate(Day = as.numeric(Date) - min_date + 1)
+
+positivity_wide %>% 
+  ggplot(aes(Positive)) +
+  geom_histogram(binwidth = 100)
+
+positivity_wide %>% 
+  ggplot(aes(Negative)) +
+  geom_histogram(binwidth = 100)
+
+positivity_wide %>% 
+  ggplot(aes(Positivity)) +
+  geom_histogram(binwidth = 0.005)
+
+# sapply(positivity_wide, function(x) sum(is.na(x)))
+```
+
+
+```{r}
+# model_time_day_01 <- gam(c(Positive, Negative) ~  s(Day), 
+#                           data = positivity_wide, 
+#                           family = binomial(link = "logit"))
+
+model_time_day_01 <- gam(Positivity ~  s(Day), 
+                          data = positivity_wide, 
+                          family = gaussian(link = "identity"))
+```
+
+
+```{r, layout="l-body-outset"}
+summary(model_time_day_01)
+# gam.check(model_time_day_01)
+# plot(model_time_day_01, pages=1)
+
+draw(model_time_day_01)
+appraise(model_time_day_01)
+```
+
+## Weekly data
+
+```{r}
+positivity_weekly_wide <- positivity_wide %>% 
+  # filter(Week > 4) %>% 
+  group_by(Week) %>% 
+  summarize(Positive = sum(Positive),
+            Negative = sum(Negative),
+            Positivity = Positive / (Positive + Negative)) %>% 
+  ungroup()
+
+positivity_weekly_wide %>% 
+  ggplot(aes(Positive)) +
+  geom_histogram(binwidth = 1000)
+
+positivity_weekly_wide %>% 
+  ggplot(aes(Negative)) +
+  geom_histogram(binwidth = 1000)
+
+positivity_weekly_wide %>% 
+  ggplot(aes(Positivity)) +
+  geom_histogram(binwidth = 0.005)
+```
+
+
+```{r}
+# model_time_week_01 <- gam(c(Positive, Negative) ~  s(Week), 
+#                           data = positivity_wide, 
+#                           family = binomial(link = "logit"))
+
+model_time_week_01 <- gam(Positivity ~  s(Week), 
+                          data = positivity_weekly_wide, 
+                          family = gaussian(link = "identity"))
+```
+
+
+```{r, layout="l-body-outset"}
+summary(model_time_week_01)
+# gam.check(model_time_week_01)
+# plot(model_time_week_01, pages=1)
+
+draw(model_time_week_01)
+appraise(model_time_week_01)
+```
+
+
+

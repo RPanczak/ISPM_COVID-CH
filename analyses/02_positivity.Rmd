@@ -1,5 +1,5 @@
 ---
-title: "COVID-SEP project"
+title: "COVID-CH project"
 description: "Analyses of FOPH data - positivity"
 date: "`r Sys.Date()`"
 author:

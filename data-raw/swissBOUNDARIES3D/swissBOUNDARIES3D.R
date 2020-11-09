@@ -43,9 +43,5 @@ View(st_drop_geometry(lac20))
 
 canton_20_1 %>% 
   select(-KT_TEIL) %>% 
-  saveRDS("data/swissBOUNDARIES3D/canton_20_1.Rds", delete_dsn = TRUE)
-
-# lac20 %>% 
-#   select(-BFS_NUMMER) %>% 
-#   st_write("data/swissBOUNDARIES3D/lac20.shp", delete_dsn = TRUE)
+  write_rds("data/swissBOUNDARIES3D/canton_20_1.Rds")
 

@@ -63,6 +63,17 @@ positivity %>%
   filter(Date == as.Date("2020-02-24"))
 ```
 
+## 7 day rolling average
+
+```{r}
+positivity %<>% 
+  arrange(Outcome_tests, Date) %>% 
+  group_by(Outcome_tests) %>% 
+  mutate(Number_of_tests_07da = zoo::rollmean(Number_of_tests, k = 7, fill = NA)) %>% 
+  ungroup()
+```
+
+
 <!-- ------------------------------------------------------------ --> 
 
 # Temporal overview
@@ -73,8 +84,12 @@ positivity %>%
 positivity %>% 
   group_by(Date) %>% 
   summarize(Number_of_tests = sum(Number_of_tests)) %>% 
-  ggplot() + 
-  geom_col(aes(x = Date, y = Number_of_tests)) + 
+  ungroup() %>% 
+  mutate(Number_of_tests_07da = zoo::rollmean(Number_of_tests, k = 7, fill = NA)) %>% 
+  filter(Date < as.Date("2020-11-23")) %>% 
+  ggplot(aes(x = Date)) + 
+  geom_col(aes(y = Number_of_tests)) + 
+  geom_line(aes(y = Number_of_tests_07da), color = "red") + 
   xlab("") + ylab("Number of tests")
 ```
 
@@ -115,8 +130,8 @@ tests_daily %>%
 
 ```{r}
 model_time_day_01 <- gam(Number_of_tests ~  s(Day), 
-                          data = tests_daily, 
-                          family = gaussian(link = "identity"))
+                         data = tests_daily, 
+                         family = gaussian(link = "identity"))
 ```
 
 

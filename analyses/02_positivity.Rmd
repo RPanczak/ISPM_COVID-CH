@@ -66,7 +66,7 @@ positivity_wide <- positivity %>%
 positivity_wide %>% 
   slice(1:2)
 ```
-  
+
 ## Example: first case:
 
 ```{r echo=FALSE}
@@ -82,8 +82,11 @@ positivity_wide %>%
 
 ```{r echo=FALSE, layout="l-body-outset"}
 positivity_wide %>% 
-  ggplot() + 
-  geom_col(aes(x = Date, y = Positivity)) + 
+  mutate(Positivity_07da = zoo::rollmean(Positivity, k = 7, fill = NA)) %>% 
+  filter(Date < as.Date("2020-11-23")) %>% 
+  ggplot(aes(x = Date)) + 
+  geom_col(aes(y = Positivity)) + 
+  geom_line(aes(y = Positivity_07da), color = "red") + 
   xlab("") + ylab("Positivity")
 ```
 
@@ -137,8 +140,8 @@ positivity_wide %>%
 #                           family = binomial(link = "logit"))
 
 model_time_day_01 <- gam(Positivity ~  s(Day), 
-                          data = positivity_wide, 
-                          family = gaussian(link = "identity"))
+                         data = positivity_wide, 
+                         family = gaussian(link = "identity"))
 ```
 
 

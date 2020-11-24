@@ -49,30 +49,31 @@ p_load(dplyr, tidyr, readr, scales, ggplot2,
 Publicly available testing data are daily aggregated, splitting by `Outcome_tests`:
 
 ```{r echo=FALSE, layout="l-body-outset"}
-positivity <- read_rds("data/BAG-open/positivity.rds")
-# View(positivity)
+testing <- read_rds("data/BAG-open/positivity.rds")
+# View(testing)
 
-positivity %>% 
+testing %>% 
   slice(1:4)
 ```
 
 ## Example: first case:
 
 ```{r echo=FALSE}
-positivity %>% 
+testing %>% 
   filter(Date == as.Date("2020-02-24"))
 ```
 
 ## 7 day rolling average
 
 ```{r}
-positivity %<>% 
-  arrange(Outcome_tests, Date) %>% 
-  group_by(Outcome_tests) %>% 
+testing %<>% 
+  group_by(Date) %>% 
+  summarise(Number_of_tests = sum(Number_of_tests)) %>% 
+  ungroup() %>% 
   mutate(Number_of_tests_07da = zoo::rollmean(Number_of_tests, k = 7, fill = NA)) %>% 
-  ungroup()
+  mutate(Week = as.integer(format(Date, format = "%V"))) %>% 
+  arrange(Date)
 ```
-
 
 <!-- ------------------------------------------------------------ --> 
 
@@ -81,11 +82,7 @@ positivity %<>%
 ## Daily tests
 
 ```{r echo=FALSE, layout="l-body-outset"}
-positivity %>% 
-  group_by(Date) %>% 
-  summarize(Number_of_tests = sum(Number_of_tests)) %>% 
-  ungroup() %>% 
-  mutate(Number_of_tests_07da = zoo::rollmean(Number_of_tests, k = 7, fill = NA)) %>% 
+testing %>% 
   filter(Date < as.Date("2020-11-23")) %>% 
   ggplot(aes(x = Date)) + 
   geom_col(aes(y = Number_of_tests)) + 
@@ -96,7 +93,7 @@ positivity %>%
 ## Weekly overview:
 
 ```{r echo=FALSE, layout="l-body-outset"}
-positivity %>% 
+testing %>% 
   # filter(Week > 4) %>% 
   group_by(Week) %>% 
   summarize(Number_of_tests = sum(Number_of_tests)) %>% 
@@ -112,17 +109,13 @@ positivity %>%
 ## Daily data
 
 ```{r}
-min_date <- as.numeric(min(positivity$Date))
+min_date <- as.numeric(min(testing$Date))
 
-tests_daily <- positivity %>% 
-  # filter(Week > 4) %>% 
-  group_by(Date) %>% 
-  summarize(Number_of_tests = sum(Number_of_tests)) %>% 
-  ungroup() %>% 
+testing %<>% 
   arrange(Date) %>% 
   mutate(Day = as.numeric(Date) - min_date + 1)
 
-tests_daily %>% 
+testing %>% 
   ggplot(aes(Number_of_tests)) +
   geom_histogram(binwidth = 1000)
 ```
@@ -130,7 +123,7 @@ tests_daily %>%
 
 ```{r}
 model_time_day_01 <- gam(Number_of_tests ~  s(Day), 
-                         data = tests_daily, 
+                         data = testing, 
                          family = gaussian(link = "identity"))
 ```
 
@@ -147,12 +140,12 @@ appraise(model_time_day_01)
 ## Weekly data
 
 ```{r}
-tests_weekly <- positivity %>% 
+testing_weekly <- testing %>% 
   # filter(Week > 4) %>% 
   group_by(Week) %>% 
   summarize(Number_of_tests = sum(Number_of_tests))
 
-tests_weekly %>% 
+testing_weekly %>% 
   ggplot(aes(Number_of_tests)) +
   geom_histogram(binwidth = 10000)
 ```
@@ -160,7 +153,7 @@ tests_weekly %>%
 
 ```{r}
 model_time_week_01 <- gam(Number_of_tests ~  s(Week), 
-                          data = tests_weekly, 
+                          data = testing_weekly, 
                           family = gaussian(link = "identity"))
 ```
 

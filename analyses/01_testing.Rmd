@@ -38,6 +38,8 @@ p_load(dplyr, tidyr, readr, scales, ggplot2,
        sjmisc, sjPlot,
        mgcv, gratia,
        sf, tmap)
+
+theme_set(theme_bw())
 ```
 
 <!-- ------------------------------------------------------------ --> 
@@ -49,7 +51,7 @@ p_load(dplyr, tidyr, readr, scales, ggplot2,
 Publicly available testing data are daily aggregated, splitting by `Outcome_tests`:
 
 ```{r echo=FALSE, layout="l-body-outset"}
-testing <- read_rds("data/BAG-open/positivity.rds")
+testing <- read_rds("data/BAG-open/positivity.rds") 
 # View(testing)
 
 testing %>% 
@@ -77,7 +79,7 @@ testing %<>%
 
 <!-- ------------------------------------------------------------ --> 
 
-# Temporal overview
+# Time adjusted GAM models 
 
 ## Daily tests
 
@@ -85,28 +87,10 @@ testing %<>%
 testing %>% 
   filter(Date < as.Date("2020-11-23")) %>% 
   ggplot(aes(x = Date)) + 
-  geom_col(aes(y = Number_of_tests)) + 
-  geom_line(aes(y = Number_of_tests_07da), color = "red") + 
-  xlab("") + ylab("Number of tests")
+  geom_col(aes(y = Number_of_tests), alpha = 5/10, linetype = 0) + 
+  geom_line(aes(y = Number_of_tests_07da), color = "darkred") + 
+  xlab("") + ylab("Number of tests") 
 ```
-
-## Weekly overview:
-
-```{r echo=FALSE, layout="l-body-outset"}
-testing %>% 
-  # filter(Week > 4) %>% 
-  group_by(Week) %>% 
-  summarize(Number_of_tests = sum(Number_of_tests)) %>% 
-  ggplot() + 
-  geom_col(aes(x = as.factor(Week), y = Number_of_tests)) + 
-  xlab("Week") + ylab("Number of tests")
-```
-
-<!-- ------------------------------------------------------------ --> 
-
-# Time adjusted GAM models 
-
-## Daily data
 
 ```{r}
 min_date <- as.numeric(min(testing$Date))
@@ -117,14 +101,14 @@ testing %<>%
 
 testing %>% 
   ggplot(aes(Number_of_tests)) +
-  geom_histogram(binwidth = 1000)
+  geom_histogram(binwidth = 100)
 ```
 
 
 ```{r}
-model_time_day_01 <- gam(Number_of_tests ~  s(Day), 
+model_time_day_01 <- gam(Number_of_tests ~  s(Day, bs = 'cs', k = 28), 
                          data = testing, 
-                         family = gaussian(link = "identity"))
+                         family = scat(link = "identity"))
 ```
 
 
@@ -139,8 +123,21 @@ appraise(model_time_day_01)
 
 ## Weekly data
 
+```{r echo=FALSE, layout="l-body-outset"}
+testing %>% 
+  filter(Date <= as.Date("2020-12-20")) %>% 
+  # filter(Week > 4) %>% 
+  group_by(Week) %>% 
+  summarize(Number_of_tests = sum(Number_of_tests)) %>% 
+  ggplot() + 
+  geom_col(aes(x = as.factor(Week), y = Number_of_tests)) + 
+  xlab("Week") + ylab("Number of tests")
+```
+
+
 ```{r}
 testing_weekly <- testing %>% 
+  filter(Date <= as.Date("2020-12-20")) %>% 
   # filter(Week > 4) %>% 
   group_by(Week) %>% 
   summarize(Number_of_tests = sum(Number_of_tests))
@@ -152,9 +149,9 @@ testing_weekly %>%
 
 
 ```{r}
-model_time_week_01 <- gam(Number_of_tests ~  s(Week), 
+model_time_week_01 <- gam(Number_of_tests ~  s(Week, bs = 'cs', k = 14), 
                           data = testing_weekly, 
-                          family = gaussian(link = "identity"))
+                          family = scat(link = "identity"))
 ```
 
 

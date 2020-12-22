@@ -121,7 +121,7 @@ positivity_wide %>%
 #                           data = positivity_wide, 
 #                           family = binomial(link = "logit"))
 
-model_time_day_01 <- gam(Positivity ~  s(Day, bs = 'cs', k = 28), 
+model_time_day_01 <- gam(Positivity ~  s(Day, bs = 'cs', k = -1), 
                          data = positivity_wide, 
                          family = scat(link = "identity"))
 ```
@@ -181,7 +181,7 @@ positivity_weekly_wide %>%
 #                           data = positivity_wide, 
 #                           family = binomial(link = "logit"))
 
-model_time_week_01 <- gam(Positivity ~  s(Week, bs = 'cs', k = 14), 
+model_time_week_01 <- gam(Positivity ~  s(Week, bs = 'cs', k = -1), 
                           data = positivity_weekly_wide, 
                           family = scat(link = "identity"))
 ```

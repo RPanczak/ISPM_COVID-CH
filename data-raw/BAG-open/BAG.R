@@ -1,8 +1,6 @@
 # data from 
 # https://www.bag.admin.ch/bag/en/home/krankheiten/ausbrueche-epidemien-pandemien/aktuelle-ausbrueche-epidemien/novel-cov/situation-schweiz-und-international.html
 
-set.seed(12345)
-
 library(readxl)
 library(dplyr)
 library(readr)
@@ -54,8 +52,8 @@ download.file(url = 'https://www.bag.admin.ch/dam/bag/en/dokumente/mt/k-und-i/ak
               method = 'curl')
 
 population <- read_excel("data-raw/BAG-open/Population_Size_BFS.xlsx") %>% 
-  rename(canton = ktn,
-         age_group = akl,
+  rename(canton = Kanton,
+         age_group = Alterklasse,
          sex = Geschlecht) 
 
 write_rds(population, "data/BAG-open/population.rds")

@@ -78,9 +78,7 @@ positivity_wide %>%
 
 <!-- ------------------------------------------------------------ --> 
 
-# Time adjusted GAM models 
-
-## Daily tests
+# Time adjusted GAM models of daily positivity
 
 ```{r echo=FALSE, layout="l-body-outset"}
 positivity_wide %>% 
@@ -121,7 +119,7 @@ positivity_wide %>%
 #                           data = positivity_wide, 
 #                           family = binomial(link = "logit"))
 
-model_time_day_01 <- gam(Positivity ~  s(Day, bs = 'cs', k = -1), 
+model_time_day_01 <- gam(Positivity ~  s(Day, bs = 'cs', k = 28), 
                          data = positivity_wide, 
                          family = scat(link = "identity"))
 ```
@@ -134,66 +132,6 @@ summary(model_time_day_01)
 
 draw(model_time_day_01)
 appraise(model_time_day_01)
-```
-
-## Weekly data
-
-```{r echo=FALSE, layout="l-body-outset"}
-positivity_wide %>% 
-  filter(Date <= as.Date("2020-12-20")) %>% 
-  # filter(Week > 4) %>% 
-  group_by(Week) %>% 
-  summarize(Positive = sum(Positive),
-            Negative = sum(Negative),
-            Positivity = Positive / (Positive + Negative)) %>% 
-  ggplot() + 
-  geom_col(aes(x = as.factor(Week), y = Positivity)) + 
-  xlab("Week") + ylab("Number of tests")
-```
-
-
-```{r}
-positivity_weekly_wide <- positivity_wide %>% 
-  filter(Date <= as.Date("2020-12-20")) %>% 
-  # filter(Week > 4) %>% 
-  group_by(Week) %>% 
-  summarize(Positive = sum(Positive),
-            Negative = sum(Negative),
-            Positivity = Positive / (Positive + Negative)) %>% 
-  ungroup()
-
-positivity_weekly_wide %>% 
-  ggplot(aes(Positive)) +
-  geom_histogram(binwidth = 1000)
-
-positivity_weekly_wide %>% 
-  ggplot(aes(Negative)) +
-  geom_histogram(binwidth = 1000)
-
-positivity_weekly_wide %>% 
-  ggplot(aes(Positivity)) +
-  geom_histogram(binwidth = 0.005)
-```
-
-
-```{r}
-# model_time_week_01 <- gam(c(Positive, Negative) ~  s(Week), 
-#                           data = positivity_wide, 
-#                           family = binomial(link = "logit"))
-
-model_time_week_01 <- gam(Positivity ~  s(Week, bs = 'cs', k = -1), 
-                          data = positivity_weekly_wide, 
-                          family = scat(link = "identity"))
-```
-
-
-```{r, layout="l-body-outset"}
-summary(model_time_week_01)
-# gam.check(model_time_week_01)
-# plot(model_time_week_01, pages=1)
-
-draw(model_time_week_01)
-appraise(model_time_week_01)
 ```
 
 

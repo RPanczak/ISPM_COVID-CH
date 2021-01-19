@@ -79,13 +79,11 @@ testing %<>%
 
 <!-- ------------------------------------------------------------ --> 
 
-# Time adjusted GAM models 
-
-## Daily tests
+# Time adjusted GAM models of daily tests
 
 ```{r echo=FALSE, layout="l-body-outset"}
 testing %>% 
-  filter(Date < as.Date("2020-11-23")) %>% 
+  # filter(Date < as.Date("2021-01-18")) %>% 
   ggplot(aes(x = Date)) + 
   geom_col(aes(y = Number_of_tests), alpha = 5/10, linetype = 0) + 
   geom_line(aes(y = Number_of_tests_07da), color = "darkred") + 
@@ -106,7 +104,7 @@ testing %>%
 
 
 ```{r}
-model_time_day_01 <- gam(Number_of_tests ~  s(Day, bs = 'cs', k = -1), 
+model_time_day_01 <- gam(Number_of_tests ~  s(Day, bs = 'cs', k = 28), 
                          data = testing, 
                          family = scat(link = "identity"))
 ```
@@ -121,48 +119,6 @@ draw(model_time_day_01)
 appraise(model_time_day_01)
 ```
 
-## Weekly data
-
-```{r echo=FALSE, layout="l-body-outset"}
-testing %>% 
-  filter(Date <= as.Date("2020-12-20")) %>% 
-  # filter(Week > 4) %>% 
-  group_by(Week) %>% 
-  summarize(Number_of_tests = sum(Number_of_tests)) %>% 
-  ggplot() + 
-  geom_col(aes(x = as.factor(Week), y = Number_of_tests)) + 
-  xlab("Week") + ylab("Number of tests")
-```
-
-
-```{r}
-testing_weekly <- testing %>% 
-  filter(Date <= as.Date("2020-12-20")) %>% 
-  # filter(Week > 4) %>% 
-  group_by(Week) %>% 
-  summarize(Number_of_tests = sum(Number_of_tests))
-
-testing_weekly %>% 
-  ggplot(aes(Number_of_tests)) +
-  geom_histogram(binwidth = 10000)
-```
-
-
-```{r}
-model_time_week_01 <- gam(Number_of_tests ~  s(Week, bs = 'cs', k = -1), 
-                          data = testing_weekly, 
-                          family = scat(link = "identity"))
-```
-
-
-```{r, layout="l-body-outset"}
-summary(model_time_week_01)
-# gam.check(model_time_week_01)
-# plot(model_time_week_01, pages=1)
-
-draw(model_time_week_01)
-appraise(model_time_week_01)
-```
 
 
 

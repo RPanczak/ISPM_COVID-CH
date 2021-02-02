@@ -74,7 +74,8 @@ testing %<>%
   ungroup() %>% 
   mutate(Number_of_tests_07da = zoo::rollmean(Number_of_tests, k = 7, fill = NA)) %>% 
   mutate(Week = as.integer(format(Date, format = "%V"))) %>% 
-  arrange(Date)
+  arrange(Date) %>% 
+  mutate(weekend = chron::is.weekend(Date))
 ```
 
 <!-- ------------------------------------------------------------ --> 
@@ -107,16 +108,32 @@ testing %>%
 model_time_day_01 <- gam(Number_of_tests ~  s(Day, bs = 'cs', k = 28), 
                          data = testing, 
                          family = scat(link = "identity"))
+
+model_time_day_02 <- gam(Number_of_tests ~  s(Day, bs = 'cs', k = 28) +
+                           weekend, 
+                         data = testing, 
+                         family = scat(link = "identity"))
 ```
 
+```{r}
+AIC(model_time_day_01, model_time_day_02)
+
+summary(model_time_day_01)$sp.criterion
+summary(model_time_day_02)$sp.criterion
+
+summary(model_time_day_01)$r.sq
+summary(model_time_day_02)$r.sq
+
+anova(model_time_day_01, model_time_day_02, test="Chisq")
+```
 
 ```{r, layout="l-body-outset"}
-summary(model_time_day_01)
+summary(model_time_day_02)
 # gam.check(model_time_day_01)
 # plot(model_time_day_01, pages=1)
 
-draw(model_time_day_01)
-appraise(model_time_day_01)
+draw(model_time_day_02)
+appraise(model_time_day_02)
 ```
 
 

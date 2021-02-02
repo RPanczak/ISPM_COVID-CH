@@ -50,9 +50,8 @@ p_load(dplyr, tidyr, readr, scales, ggplot2,
 deaths <- read_rds("data/BAG-open/deaths_cases.rds") %>% 
   filter(!is.na(pttoddat)) %>% 
   select(-fall_dt, -cases) %>% 
-  arrange(pttoddat, canton, sex, age_group)
-
-deaths$weekend = chron::is.weekend(deaths$pttoddat)
+  arrange(pttoddat, canton, sex, age_group) %>% 
+  mutate(weekend = chron::is.weekend(pttoddat))
 ```
 
 ```{r echo=FALSE, layout="l-body-outset"}

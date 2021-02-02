@@ -63,7 +63,8 @@ positivity %>%
 ```{r}
 positivity_wide <- positivity %>% 
   pivot_wider(names_from = Outcome_tests, values_from = Number_of_tests) %>% 
-  mutate(Positivity = Positive / (Positive + Negative))
+  mutate(Positivity = Positive / (Positive + Negative)) %>% 
+  mutate(weekend = chron::is.weekend(Date))
 
 positivity_wide %>% 
   slice(1:2)
@@ -122,16 +123,33 @@ positivity_wide %>%
 model_time_day_01 <- gam(Positivity ~  s(Day, bs = 'cs', k = 28), 
                          data = positivity_wide, 
                          family = scat(link = "identity"))
+
+model_time_day_02 <- gam(Positivity ~  s(Day, bs = 'cs', k = 28) +
+                           weekend, 
+                         data = positivity_wide, 
+                         family = scat(link = "identity"))
 ```
 
 
+```{r}
+AIC(model_time_day_01, model_time_day_02)
+
+summary(model_time_day_01)$sp.criterion
+summary(model_time_day_02)$sp.criterion
+
+summary(model_time_day_01)$r.sq
+summary(model_time_day_02)$r.sq
+
+anova(model_time_day_01, model_time_day_02, test="Chisq")
+```
+
 ```{r, layout="l-body-outset"}
-summary(model_time_day_01)
+summary(model_time_day_02)
 # gam.check(model_time_day_01)
 # plot(model_time_day_01, pages=1)
 
-draw(model_time_day_01)
-appraise(model_time_day_01)
+draw(model_time_day_02)
+appraise(model_time_day_02)
 ```
 
 

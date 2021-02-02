@@ -1,0 +1,75 @@
+---
+title: "COVID-CH project"
+description: "Analyses of FOPH data - cases"
+date: "`r Sys.Date()`"
+author:
+  - name: Radoslaw Panczak 
+    url: https://github.com/RPanczak
+    affiliation: ISPM
+    affiliation_url: https://www.ispm.unibe.ch/
+    orcid_id: 0000-0001-5141-683X
+# bibliography: biblio.bib
+output:
+  distill::distill_article:
+    highlight: pygments
+    toc: true
+    toc_depth: 1
+    number_sections: true
+editor_options: 
+  chunk_output_type: console
+---
+
+<!-- ------------------------------------------------------------ --> 
+<!-- ------------------------------------------------------------ --> 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, 
+                      # fig.width=8, fig.height=6, 
+                      # out.width="800px", out.height="600px",
+                      dpi=300)
+
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+
+options(scipen=999)
+set.seed(12345)
+
+library(pacman) 
+p_load(dplyr, tidyr, readr, scales, ggplot2,
+       sjmisc, sjPlot,
+       mgcv, gratia,
+       sf, tmap)
+```
+
+<!-- ------------------------------------------------------------ --> 
+
+# Raw data 
+
+```{r}
+cases <- read_rds("data/BAG-open/deaths_cases.rds") %>% 
+  filter(!is.na(fall_dt)) %>% 
+  select(-pttoddat, -deaths) %>% 
+  arrange(fall_dt, canton, sex, age_group)
+
+cases$weekend = chron::is.weekend(cases$fall_dt)
+```
+
+```{r echo=FALSE, layout="l-body-outset"}
+cases %>% 
+  group_by(fall_dt) %>% 
+  summarise(cases = sum(cases)) %>% 
+  mutate(cases_7d = zoo::rollmean(cases, k = 7, fill = NA)) %>% 
+  ggplot(aes(x = fall_dt)) + 
+  geom_col(aes(y = cases), alpha = 5/10, linetype = 0) + 
+  geom_line(aes(y = cases_7d), color = "red") + 
+  xlab("") + ylab("Cases")
+```
+
+```{r echo=FALSE, layout="l-body-outset"}
+cases %>% 
+  group_by(fall_dt) %>% 
+  summarise(cases = sum(cases)) %>% 
+  mutate(cum_cases = cumsum(cases)) %>% 
+  ggplot(aes(x = fall_dt)) + 
+  geom_line(aes(y = cum_cases), color = "red") + 
+  xlab("") + ylab("Cumulative cases")
+```

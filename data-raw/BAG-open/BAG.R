@@ -24,20 +24,42 @@ write_rds(positivity, "data/BAG-open/positivity.rds")
 
 # #####################
 
-download.file(url = 'https://www.bag.admin.ch/dam/bag/en/dokumente/mt/k-und-i/aktuelle-ausbrueche-pandemien/2019-nCoV/covid-19-basisdaten-fallzahlen.xlsx.download.xlsx/Dashboards_1&2_COVID19_swiss_data_pv.xlsx',
-              destfile = 'data-raw/BAG-open/Dashboards_1&2_COVID19_swiss_data_pv.xlsx', 
+# download.file(url = 'https://www.bag.admin.ch/dam/bag/en/dokumente/mt/k-und-i/aktuelle-ausbrueche-pandemien/2019-nCoV/covid-19-basisdaten-fallzahlen.xlsx.download.xlsx/Dashboards_1&2_COVID19_swiss_data_pv.xlsx',
+#               destfile = 'data-raw/BAG-open/Dashboards_1&2_COVID19_swiss_data_pv.xlsx', 
+#               method = 'curl')
+
+# deaths_cases <- read_xlsx("data-raw/BAG-open/Data on laboratory findings and deaths.csv", 
+#                           col_types = c("date", "text", "text", 
+#                                         "text", "text", "text", "text", 
+#                                         "numeric", "text", "numeric"),
+#                           na = "NA") %>% 
+#   select(-replikation_dt, -Geschlecht, - Sexe) %>% 
+#   mutate(sex = factor(sex, labels = c("Men", "Women", "Unknown"))) %>% 
+#   mutate(akl = factor(akl)) %>% 
+#   mutate(fall_dt = as.Date(fall_dt), 
+#          pttoddat = as.Date(pttoddat)) %>% 
+#   rename(canton = ktn,
+#          age_group = akl,
+#          deaths = pttod_1, 
+#          cases = fallklasse_3) 
+
+download.file(url = 'https://www.bag.admin.ch/dam/bag/en/dokumente/mt/k-und-i/aktuelle-ausbrueche-pandemien/2019-nCoV/covid-19-basisdaten-fallzahlen.csv.download.csv/Data%20on%20laboratory%20findings%20and%20deaths.csv',
+              destfile = 'data-raw/BAG-open/Data on laboratory findings and deaths.csv', 
               method = 'curl')
 
-deaths_cases <- read_xlsx("data-raw/BAG-open/Dashboards_1&2_COVID19_swiss_data_pv.xlsx", 
-                          col_types = c("date", "text", "text", 
-                                        "text", "text", "text", "text", 
-                                        "numeric", "text", "numeric"),
-                          na = "NA") %>% 
-  select(-replikation_dt, -Geschlecht, - Sexe) %>% 
+deaths_cases <- read_delim("data-raw/BAG-open/Data on laboratory findings and deaths.csv", 
+                           delim = ";",
+                           col_names = TRUE, 
+                           col_types = cols_only(
+                             fall_dt = col_date(),
+                             ktn = col_character(),
+                             akl = col_character(),
+                             sex = col_integer(),
+                             fallklasse_3 = col_integer(),
+                             pttoddat = col_date(),
+                             pttod_1 = col_integer())) %>% 
   mutate(sex = factor(sex, labels = c("Men", "Women", "Unknown"))) %>% 
   mutate(akl = factor(akl)) %>% 
-  mutate(fall_dt = as.Date(fall_dt), 
-         pttoddat = as.Date(pttoddat)) %>% 
   rename(canton = ktn,
          age_group = akl,
          deaths = pttod_1, 

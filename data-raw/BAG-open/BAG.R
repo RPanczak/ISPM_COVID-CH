@@ -47,7 +47,12 @@ download.file(url = 'https://www.bag.admin.ch/dam/bag/en/dokumente/mt/k-und-i/ak
               destfile = 'data-raw/BAG-open/Data on laboratory findings and deaths.csv', 
               method = 'curl')
 
-deaths_cases <- read_delim("data-raw/BAG-open/Data on laboratory findings and deaths.csv", 
+zip(zipfile = "data-raw/BAG-open/Data on laboratory findings and deaths", 
+    files = "data-raw/BAG-open/Data on laboratory findings and deaths.csv")
+
+file.remove("data-raw/BAG-open/Data on laboratory findings and deaths.csv")
+
+deaths_cases <- read_delim("data-raw/BAG-open/Data on laboratory findings and deaths.zip", 
                            delim = ";",
                            col_names = TRUE, 
                            col_types = cols_only(
@@ -73,7 +78,8 @@ download.file(url = 'https://www.bag.admin.ch/dam/bag/en/dokumente/mt/k-und-i/ak
               destfile = 'data-raw/BAG-open/Population_Size_BFS.xlsx', 
               method = 'curl')
 
-population <- read_excel("data-raw/BAG-open/Population_Size_BFS.xlsx") %>% 
+population <- read_xlsx("data-raw/BAG-open/Population_Size_BFS.xlsx",
+                        sheet = "Population nach AKL, sex, KTN") %>% 
   rename(canton = Kanton,
          age_group = Alterklasse,
          sex = Geschlecht) 

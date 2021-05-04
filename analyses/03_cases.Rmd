@@ -60,7 +60,7 @@ cases %>%
   ggplot(aes(x = fall_dt)) + 
   geom_col(aes(y = cases), alpha = 5/10, linetype = 0) + 
   geom_line(aes(y = cases_7d), color = "red") + 
-  xlab("") + ylab("Cases")
+  xlab("") + ylab("Cases") + theme_bw()
 ```
 
 ```{r echo=FALSE, layout="l-body-outset"}
@@ -70,5 +70,5 @@ cases %>%
   mutate(cum_cases = cumsum(cases)) %>% 
   ggplot(aes(x = fall_dt)) + 
   geom_line(aes(y = cum_cases), color = "red") + 
-  xlab("") + ylab("Cumulative cases")
+  xlab("") + ylab("Cumulative cases") + theme_bw()
 ```

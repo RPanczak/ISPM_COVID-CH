@@ -78,10 +78,6 @@ testing %<>%
   mutate(weekend = chron::is.weekend(Date))
 ```
 
-<!-- ------------------------------------------------------------ --> 
-
-# Time adjusted GAM models of daily tests
-
 ```{r echo=FALSE, layout="l-body-outset"}
 testing %>% 
   # filter(Date < as.Date("2021-01-18")) %>% 
@@ -90,6 +86,10 @@ testing %>%
   geom_line(aes(y = Number_of_tests_07da), color = "darkred") + 
   xlab("") + ylab("Number of tests") 
 ```
+
+<!-- ------------------------------------------------------------ --> 
+
+# Time adjusted GAM models of daily tests
 
 ```{r}
 min_date <- as.numeric(min(testing$Date))

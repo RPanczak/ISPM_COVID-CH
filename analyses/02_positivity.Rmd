@@ -77,9 +77,7 @@ positivity_wide %>%
   filter(Date == as.Date("2020-02-24"))
 ```
 
-<!-- ------------------------------------------------------------ --> 
-
-# Time adjusted GAM models of daily positivity
+## 7 day rolling average
 
 ```{r echo=FALSE, layout="l-body-outset"}
 positivity_wide %>% 
@@ -90,6 +88,10 @@ positivity_wide %>%
   geom_line(aes(y = Positivity_07da), color = "red") + 
   xlab("") + ylab("Positivity")
 ```
+
+<!-- ------------------------------------------------------------ --> 
+
+# Time adjusted GAM models of daily positivity
 
 ```{r}
 min_date <- as.numeric(min(positivity_wide$Date))

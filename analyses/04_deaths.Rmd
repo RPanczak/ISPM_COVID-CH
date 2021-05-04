@@ -44,8 +44,6 @@ p_load(dplyr, tidyr, readr, scales, ggplot2,
 
 # Raw data 
 
-# Raw data 
-
 ```{r}
 deaths <- read_rds("data/BAG-open/deaths_cases.rds") %>% 
   filter(!is.na(pttoddat)) %>% 
@@ -62,7 +60,7 @@ deaths %>%
   ggplot(aes(x = pttoddat)) + 
   geom_col(aes(y = deaths), alpha = 5/10, linetype = 0) + 
   geom_line(aes(y = deaths_7d), color = "red") + 
-  xlab("") + ylab("Deaths")
+  xlab("") + ylab("Deaths") + theme_bw()
 ```
 
 ```{r echo=FALSE, layout="l-body-outset"}
@@ -72,6 +70,6 @@ deaths %>%
   mutate(cum_deaths = cumsum(deaths)) %>% 
   ggplot(aes(x = pttoddat)) + 
   geom_line(aes(y = cum_deaths), color = "red") + 
-  xlab("") + ylab("Cumulative deaths")
+  xlab("") + ylab("Cumulative deaths") + theme_bw()
 ```
 

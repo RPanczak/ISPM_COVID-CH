@@ -1,7 +1,7 @@
 # data from 
 # https://www.bag.admin.ch/bag/en/home/krankheiten/ausbrueche-epidemien-pandemien/aktuelle-ausbrueche-epidemien/novel-cov/situation-schweiz-und-international.html
 # updated
-# 2021-07-20
+# 2021-08-19
 
 set.seed(12345)
 library(readxl)
@@ -65,12 +65,12 @@ deaths_cases <- read_delim("data-raw/BAG-open/Data on laboratory findings and de
                              sex = col_integer(),
                              fallklasse_3 = col_integer(),
                              pttoddat = col_date(),
-                             pttod_1 = col_integer())) %>% 
+                             case_death_1 = col_integer())) %>% 
   mutate(sex = factor(sex, labels = c("Men", "Women", "Unknown"))) %>% 
   mutate(akl = factor(akl)) %>% 
   rename(canton = ktn,
          age_group = akl,
-         deaths = pttod_1, 
+         deaths = case_death_1, 
          cases = fallklasse_3) 
 
 write_rds(deaths_cases, "data/BAG-open/deaths_cases.rds")

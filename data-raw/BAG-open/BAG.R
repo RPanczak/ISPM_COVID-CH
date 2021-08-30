@@ -1,7 +1,7 @@
 # data from 
 # https://www.bag.admin.ch/bag/en/home/krankheiten/ausbrueche-epidemien-pandemien/aktuelle-ausbrueche-epidemien/novel-cov/situation-schweiz-und-international.html
 # updated
-# 2021-08-19
+# 2021-08-30
 
 set.seed(12345)
 library(readxl)
@@ -22,6 +22,11 @@ positivity <- read_xlsx("data-raw/BAG-open/Dashboard_3_COVID19_labtests_positivi
   mutate(Datum = as.Date(Datum)) %>% 
   mutate(Week = as.integer(format(Datum, format = "%V"))) %>% 
   rename(Date = Datum)
+
+zip(zipfile = "data-raw/BAG-open/Dashboard_3_COVID19_labtests_positivity", 
+    files = "data-raw/BAG-open/Dashboard_3_COVID19_labtests_positivity.xlsx")
+
+file.remove("data-raw/BAG-open/Dashboard_3_COVID19_labtests_positivity.xlsx")
 
 write_rds(positivity, "data/BAG-open/positivity.rds")
 

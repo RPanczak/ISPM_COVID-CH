@@ -1,0 +1,123 @@
+---
+title: "COVID-CH project"
+description: "Analyses of FOPH data - age at death"
+date: "`r Sys.Date()`"
+author:
+  - name: Radoslaw Panczak 
+    url: https://github.com/RPanczak
+    affiliation: ISPM
+    affiliation_url: https://www.ispm.unibe.ch/
+    orcid_id: 0000-0001-5141-683X
+# bibliography: biblio.bib
+output:
+  distill::distill_article:
+    highlight: pygments
+    toc: true
+    toc_depth: 1
+    number_sections: true
+editor_options: 
+  chunk_output_type: console
+---
+
+<!-- ------------------------------------------------------------ --> 
+<!-- ------------------------------------------------------------ --> 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, 
+                      # fig.width=8, fig.height=6, 
+                      # out.width="800px", out.height="600px",
+                      dpi=300)
+
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+
+options(scipen=999)
+set.seed(12345)
+
+library(pacman) 
+p_load(dplyr, tidyr, readr, forcats, scales, ggplot2, lubridate)
+```
+
+<!-- ------------------------------------------------------------ --> 
+
+# Raw data 
+
+```{r}
+deaths <- read_rds("data/BAG-open/deaths_cases.rds") %>% 
+  filter(!is.na(pttoddat)) %>% 
+  select(-fall_dt, -cases) %>% 
+  filter(age_group != "Unbekannt") %>% 
+  mutate(age_group = fct_drop(age_group)) %>% 
+  arrange(pttoddat, canton, sex, age_group) %>% 
+  
+  mutate(t_week = as.character(isoweek(pttoddat))) %>% 
+  mutate(t_week = if_else(isoweek(pttoddat) < 10, 
+                          paste0("0", t_week), paste0(t_week))) %>% 
+
+  mutate(t_month = as.character(month(pttoddat))) %>% 
+  mutate(t_month = if_else(month(pttoddat) < 10, 
+                          paste0("0", t_month), paste0(t_month))) %>% 
+  
+  mutate(week = paste0(year(pttoddat), "-", t_week),
+         month = paste0(year(pttoddat), "-", t_month))
+```
+
+# Weekly 
+
+```{r echo=FALSE, layout="l-body-outset"}
+age_deaths_week <- deaths %>% 
+  group_by(week, age_group) %>% 
+  summarise(deaths = sum(deaths)) %>% 
+  ungroup() %>% 
+  group_by(week) %>% 
+  mutate(denominator = sum(deaths)) %>% 
+  ungroup() %>% 
+  mutate(share = deaths / denominator)
+```
+
+```{r echo=FALSE, layout="l-body-outset"}
+age_deaths_week %>% 
+  ggplot(aes(x = week, y = share, fill = age_group)) + 
+  geom_col() + 
+  scale_fill_brewer(palette = "RdYlGn") +
+  xlab("") + ylab("Prop. of deaths") + theme_bw()
+```
+
+```{r echo=FALSE, layout="l-body-outset"}
+age_deaths_week %>% 
+  ggplot(aes(x = week, y = deaths, fill = age_group)) + 
+  geom_col() + 
+  scale_fill_brewer(palette = "RdYlGn") +
+  xlab("") + ylab("No. of deaths") + theme_bw()
+```
+
+
+# Month 
+
+```{r echo=FALSE, layout="l-body-outset"}
+age_deaths_month <- deaths %>% 
+  group_by(month, age_group) %>% 
+  summarise(deaths = sum(deaths)) %>% 
+  ungroup() %>% 
+  group_by(month) %>% 
+  mutate(denominator = sum(deaths)) %>% 
+  ungroup() %>% 
+  mutate(share = deaths / denominator)
+```
+
+
+```{r echo=FALSE, layout="l-body-outset"}
+age_deaths_month %>% 
+  ggplot(aes(x = month, y = share, fill = age_group)) + 
+  geom_col() + 
+  scale_fill_brewer(palette = "RdYlGn") +
+  xlab("") + ylab("Prop. of deaths") + theme_bw()
+```
+
+
+```{r echo=FALSE, layout="l-body-outset"}
+age_deaths_month %>% 
+  ggplot(aes(x = month, y = deaths, fill = age_group)) + 
+  geom_col() + 
+  scale_fill_brewer(palette = "RdYlGn") +
+  xlab("") + ylab("No. of deaths") + theme_bw()
+```

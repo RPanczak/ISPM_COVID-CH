@@ -1,0 +1,72 @@
+---
+title: "COVID-CH project"
+description: "Analyses of FOPH data - mobility"
+date: "`r Sys.Date()`"
+author:
+  - name: Radoslaw Panczak 
+    url: https://github.com/RPanczak
+    affiliation: ISPM
+    affiliation_url: https://www.ispm.unibe.ch/
+    orcid_id: 0000-0001-5141-683X
+# bibliography: biblio.bib
+output:
+  distill::distill_article:
+    highlight: pygments
+    toc: true
+    toc_depth: 1
+    number_sections: true
+editor_options: 
+  chunk_output_type: console
+---
+
+<!-- ------------------------------------------------------------ --> 
+<!-- ------------------------------------------------------------ --> 
+
+```{r eval=FALSE, include=FALSE}
+remotes::install_github("kjhealy/covmobility")
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, 
+                      # fig.width=8, fig.height=6, 
+                      # out.width="800px", out.height="600px",
+                      dpi=300)
+
+knitr::opts_knit$set(root.dir = rprojroot::find_rstudio_root_file())
+
+options(scipen=999)
+set.seed(12345)
+
+library(pacman) 
+p_load(tidyverse, magrittr, covmobility)
+```
+
+<!-- ------------------------------------------------------------ --> 
+
+# Apple
+
+Data from [Apple](https://covid19.apple.com/mobility)
+
+> The CSV file and charts on this site show a relative volume of directions requests per country/region, sub-region or city compared to a baseline volume on 13 January 2020. We define our day as midnight-to-midnight, US Pacific time. Cities are defined as the greater metropolitan area and their geographic boundaries remain constant across the data set. In many countries/regions, sub-regions and cities, relative volume has increased since 13 January, consistent with normal, seasonal usage of Apple Maps. Day of week effects are important to normalise as you use this data. Data that is sent from users’ devices to the Maps service is associated with random, rotating identifiers so Apple does not have a profile of individual movements and searches. Apple Maps has no demographic information about users, so we cannot make any statements about the representativeness of our usage against the overall population.
+
+https://covid19-static.cdn-apple.com/covid19-mobility-data/2202HotfixDev10/v3/en-us/applemobilitytrends-2021-11-14.csv
+
+```{r}
+data(apple_mobility)
+apple_mobility %<>%
+  filter(country == "Switzerland")
+```
+
+```{r}
+apple_mobility %>% 
+  filter(sub_region == "Canton of Bern" | sub_region == "Canton of Geneva") %>% 
+  ggplot(aes(x = date, y = score,
+             color = transportation_type)) +
+  geom_line() + 
+  facet_wrap(vars(sub_region)) + 
+  theme_minimal()
+```
+
+
+
+

@@ -22,10 +22,6 @@ editor_options:
 <!-- ------------------------------------------------------------ --> 
 <!-- ------------------------------------------------------------ --> 
 
-```{r eval=FALSE, include=FALSE}
-remotes::install_github("kjhealy/covmobility")
-```
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, 
                       # fig.width=8, fig.height=6, 
@@ -38,7 +34,7 @@ options(scipen=999)
 set.seed(12345)
 
 library(pacman) 
-p_load(tidyverse, magrittr, covmobility)
+p_load(tidyverse, janitor, lubridate, magrittr, covmobility)
 ```
 
 <!-- ------------------------------------------------------------ --> 
@@ -49,19 +45,33 @@ Data from [Mobility Trends Reports](https://covid19.apple.com/mobility)
 
 > The CSV file and charts on this site show a relative volume of directions requests per country/region, sub-region or city compared to a baseline volume on 13 January 2020. We define our day as midnight-to-midnight, US Pacific time. Cities are defined as the greater metropolitan area and their geographic boundaries remain constant across the data set. In many countries/regions, sub-regions and cities, relative volume has increased since 13 January, consistent with normal, seasonal usage of Apple Maps. Day of week effects are important to normalise as you use this data. Data that is sent from users’ devices to the Maps service is associated with random, rotating identifiers so Apple does not have a profile of individual movements and searches. Apple Maps has no demographic information about users, so we cannot make any statements about the representativeness of our usage against the overall population.
 
-https://covid19-static.cdn-apple.com/covid19-mobility-data/2202HotfixDev10/v3/en-us/applemobilitytrends-2021-11-14.csv
-
 ```{r}
-data(apple_mobility)
-apple_mobility %<>%
+download.file(url = 'https://covid19-static.cdn-apple.com/covid19-mobility-data/2202HotfixDev10/v3/en-us/applemobilitytrends-2021-11-14.csv',
+              destfile = 'data-raw/apple/applemobilitytrends.csv',
+              method = 'curl')
+
+# zip(zipfile = "data-raw/apple/applemobilitytrends", 
+#     files = "data-raw/apple/applemobilitytrends.csv")
+
+apple_mobility <- read_csv("data-raw/apple/applemobilitytrends.csv") %>%
+  clean_names() %>% remove_empty() %>% 
+  pivot_longer(cols = starts_with("x"), 
+               names_to = "date", 
+               values_to = "index") %>%
+  mutate(
+    date = stringr::str_remove(date, "x"),
+    date = stringr::str_replace_all(date, "_", "-"),
+    date = as_date(date)) %>%
+  rename(score = index) %>% 
   filter(country == "Switzerland")
+
+file.remove("data-raw/apple/applemobilitytrends.csv")
+
+write_rds(apple_mobility, "data/apple/applemobilitytrends.Rds")
+gc()
 ```
 
-```{r}
-summary(apple_mobility$date)
-```
-
-```{r}
+```{r echo=FALSE}
 apple_mobility %>% 
   filter(sub_region == "Canton of Bern" | sub_region == "Canton of Geneva") %>% 
   ggplot(aes(x = date, y = score,
@@ -85,20 +95,36 @@ Data from [Community Mobility Reports](https://www.google.com/covid19/mobility/)
 
 [Data info](https://support.google.com/covid19-mobility/answer/9824897?hl=en&ref_topic=9822927)
 
-https://www.gstatic.com/covid19/mobility/Region_Mobility_Report_CSVs.zip
-
 ```{r}
-data(google_mobility)
-google_mobility %<>%
+download.file(url = 'https://www.gstatic.com/covid19/mobility/Global_Mobility_Report.csv',
+              destfile = 'data-raw/google/Global_Mobility_Report.csv',
+              method = 'curl')
+
+# zip(zipfile = "data-raw/google/Global_Mobility_Report", 
+#     files = "data-raw/google/Global_Mobility_Report.csv")
+
+google_mobility <- read_csv("data-raw/google/Global_Mobility_Report.csv") %>%
+  clean_names() %>% remove_empty() %>% 
+  rename(iso3166_2 = iso_3166_2_code,
+         retail = retail_and_recreation_percent_change_from_baseline,
+         grocery = grocery_and_pharmacy_percent_change_from_baseline,
+         parks = parks_percent_change_from_baseline,
+         transit = transit_stations_percent_change_from_baseline,
+         workplaces = workplaces_percent_change_from_baseline,
+         residential = residential_percent_change_from_baseline) %>%
+  pivot_longer(retail:residential, 
+               names_to = "type", 
+               values_to = "pct_diff") %>% 
   select(-sub_region_2, -metro_area, -census_fips_code) %>% 
   filter(country_region_code == "CH")
+
+file.remove("data-raw/google/Global_Mobility_Report.csv")
+
+write_rds(google_mobility, "data/google/Global_Mobility_Report.Rds")
+gc()
 ```
 
-```{r}
-summary(google_mobility$date)
-```
-
-```{r}
+```{r echo=FALSE}
 google_mobility %>% 
   filter(sub_region_1 == "Canton of Bern" | sub_region_1 == "Geneva") %>% 
   ggplot(aes(x = date, y = pct_diff,

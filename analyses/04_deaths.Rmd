@@ -34,7 +34,8 @@ options(scipen=999)
 set.seed(12345)
 
 library(pacman) 
-p_load(dplyr, tidyr, readr, scales, ggplot2,
+p_load(dplyr, tidyr, readr, ggplot2,
+       scales, lubridate,
        sjmisc, sjPlot,
        mgcv, gratia)
 ```
@@ -44,31 +45,30 @@ p_load(dplyr, tidyr, readr, scales, ggplot2,
 # Raw data 
 
 ```{r}
-deaths <- read_rds("data/BAG-open/deaths_cases.rds") %>% 
-  filter(!is.na(pttoddat)) %>% 
-  select(-fall_dt, -cases) %>% 
-  arrange(pttoddat, canton, sex, age_group) %>% 
-  mutate(weekend = chron::is.weekend(pttoddat))
+deaths <- read_rds("data/BAG-open/deaths.rds") %>% 
+  mutate(weekend = chron::is.weekend(datum))
 ```
+
+```{r eval=FALSE, include=FALSE}
+# 2020 only if needed
+deaths %>% 
+  filter(datum <= ymd("2020-12-31")) %>% 
+  summarise(deaths = sum(entries))
+```
+
 
 ```{r echo=FALSE, layout="l-body-outset"}
 deaths %>% 
-  group_by(pttoddat) %>% 
-  summarise(deaths = sum(deaths)) %>% 
-  mutate(deaths_7d = zoo::rollmean(deaths, k = 7, fill = NA)) %>% 
-  ggplot(aes(x = pttoddat)) + 
-  geom_col(aes(y = deaths), alpha = 5/10, linetype = 0) + 
-  geom_line(aes(y = deaths_7d), color = "red") + 
+  ggplot(aes(x = datum)) + 
+  geom_col(aes(y = entries), alpha = 5/10, linetype = 0) + 
+  # geom_line(aes(y = mean7d), color = "red") + 
   xlab("") + ylab("Deaths") + theme_bw()
 ```
 
 ```{r echo=FALSE, layout="l-body-outset"}
 deaths %>% 
-  group_by(pttoddat) %>% 
-  summarise(deaths = sum(deaths)) %>% 
-  mutate(cum_deaths = cumsum(deaths)) %>% 
-  ggplot(aes(x = pttoddat)) + 
-  geom_line(aes(y = cum_deaths), color = "red") + 
+  ggplot(aes(x = datum)) + 
+  geom_col(aes(y = sumTotal), alpha = 5/10, linetype = 0) + 
   xlab("") + ylab("Cumulative deaths") + theme_bw()
 ```
 

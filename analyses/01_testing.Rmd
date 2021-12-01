@@ -1,6 +1,6 @@
 ---
 title: "COVID-CH project"
-description: "Analyses of FOPH data - testing"
+description: "Analyses of FOPH data - tests"
 date: "`r Sys.Date()`"
 author:
   - name: Radoslaw Panczak 
@@ -50,67 +50,61 @@ theme_set(theme_bw())
 Publicly available testing data are daily aggregated, splitting by `Outcome_tests`:
 
 ```{r echo=FALSE, layout="l-body-outset"}
-testing <- read_rds("data/BAG-open/positivity.rds") 
-# View(testing)
+tests <- read_rds("data/BAG-open/tests.rds") %>% 
+  filter(geoRegion == "CH") %>% 
+  rename(Date = datum) %>% 
+  mutate(Week = as.integer(format(Date, format = "%V"))) %>% 
+  mutate(Weekend = chron::is.weekend(Date))
 
-testing %>% 
+# View(tests)
+
+tests %>% 
   slice(1:4)
 ```
 
 ## Example: first case:
 
 ```{r echo=FALSE}
-testing %>% 
+tests %>% 
   filter(Date == as.Date("2020-02-24"))
 ```
 
 ## 7 day rolling average
 
-```{r}
-testing %<>% 
-  group_by(Date) %>% 
-  summarise(Number_of_tests = sum(Number_of_tests)) %>% 
-  ungroup() %>% 
-  mutate(Number_of_tests_07da = zoo::rollmean(Number_of_tests, k = 7, fill = NA)) %>% 
-  mutate(Week = as.integer(format(Date, format = "%V"))) %>% 
-  arrange(Date) %>% 
-  mutate(weekend = chron::is.weekend(Date))
-```
-
 ```{r echo=FALSE, layout="l-body-outset"}
-testing %>% 
+tests %>% 
   # filter(Date < as.Date("2021-01-18")) %>% 
   ggplot(aes(x = Date)) + 
-  geom_col(aes(y = Number_of_tests), alpha = 5/10, linetype = 0) + 
-  geom_line(aes(y = Number_of_tests_07da), color = "darkred") + 
+  geom_col(aes(y = pos_anteil), alpha = 5/10, linetype = 0) + 
+  geom_line(aes(y = pos_anteil_mean7d), color = "darkred") + 
   xlab("") + ylab("Number of tests") 
 ```
 
 <!-- ------------------------------------------------------------ --> 
 
-# Time adjusted GAM models of daily tests
+# Time adjusted GAM models of daily number of tests
 
 ```{r}
-min_date <- as.numeric(min(testing$Date))
+min_date <- as.numeric(min(tests$Date))
 
-testing %<>% 
+tests %<>% 
   arrange(Date) %>% 
   mutate(Day = as.numeric(Date) - min_date + 1)
 
-testing %>% 
-  ggplot(aes(Number_of_tests)) +
+tests %>% 
+  ggplot(aes(entries)) +
   geom_histogram(binwidth = 100)
 ```
 
 
 ```{r}
-model_time_day_01 <- gam(Number_of_tests ~  s(Day, bs = 'cs', k = 28), 
-                         data = testing, 
+model_time_day_01 <- gam(entries ~  s(Day, bs = 'cs', k = 28), 
+                         data = tests, 
                          family = scat(link = "identity"))
 
-model_time_day_02 <- gam(Number_of_tests ~  s(Day, bs = 'cs', k = 28) +
-                           weekend, 
-                         data = testing, 
+model_time_day_02 <- gam(entries ~  s(Day, bs = 'cs', k = 28) +
+                           Weekend, 
+                         data = tests, 
                          family = scat(link = "identity"))
 ```
 

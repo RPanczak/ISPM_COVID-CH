@@ -46,6 +46,7 @@ p_load(dplyr, tidyr, readr, ggplot2,
 
 ```{r}
 deaths <- read_rds("data/BAG-open/deaths.rds") %>% 
+  filter(geoRegion == "CH") %>% 
   mutate(weekend = chron::is.weekend(datum))
 ```
 
@@ -61,7 +62,7 @@ deaths %>%
 deaths %>% 
   ggplot(aes(x = datum)) + 
   geom_col(aes(y = entries), alpha = 5/10, linetype = 0) + 
-  # geom_line(aes(y = mean7d), color = "red") + 
+  geom_line(aes(y = mean7d), color = "red") +
   xlab("") + ylab("Deaths") + theme_bw()
 ```
 

@@ -50,38 +50,31 @@ theme_set(theme_bw())
 Publicly available testing data are daily aggregated, splitting by `Outcome_tests`:
 
 ```{r echo=FALSE, layout="l-body-outset"}
-positivity <- read_rds("data/BAG-open/positivity.rds")
+positivity <- read_rds("data/BAG-open/tests.rds") %>% 
+  filter(geoRegion == "CH") %>% 
+  rename(Date = datum) %>% 
+  mutate(Week = as.integer(format(Date, format = "%V"))) %>% 
+  mutate(Weekend = chron::is.weekend(Date))  %>% 
+  mutate(Positivity = entries_pos / entries) 
+
 # View(positivity)
 
 positivity %>% 
   slice(1:4)
 ```
 
-## Positivity - from wide format
-
-```{r}
-positivity_wide <- positivity %>% 
-  pivot_wider(names_from = Outcome_tests, values_from = Number_of_tests) %>% 
-  mutate(Positivity = Positive / (Positive + Negative)) %>% 
-  mutate(weekend = chron::is.weekend(Date))
-
-positivity_wide %>% 
-  slice(1:2)
-```
-
 ## Example: first case:
 
 ```{r echo=FALSE}
-positivity_wide %>% 
+positivity %>% 
   filter(Date == as.Date("2020-02-24"))
 ```
 
 ## 7 day rolling average
 
 ```{r echo=FALSE, layout="l-body-outset"}
-positivity_wide %>% 
+positivity %>% 
   mutate(Positivity_07da = zoo::rollmean(Positivity, k = 7, fill = NA)) %>% 
-  filter(Date < as.Date("2020-11-23")) %>% 
   ggplot(aes(x = Date)) + 
   geom_col(aes(y = Positivity), alpha = 5/10, linetype = 0) + 
   geom_line(aes(y = Positivity_07da), color = "red") + 
@@ -93,41 +86,33 @@ positivity_wide %>%
 # Time adjusted GAM models of daily positivity
 
 ```{r}
-min_date <- as.numeric(min(positivity_wide$Date))
+min_date <- as.numeric(min(positivity$Date))
 
-positivity_wide %<>% 
+positivity %<>% 
   # filter(Week > 4) %>% 
   arrange(Date) %>% 
   mutate(Day = as.numeric(Date) - min_date + 1)
 
-positivity_wide %>% 
-  ggplot(aes(Positive)) +
-  geom_histogram(binwidth = 100)
-
-positivity_wide %>% 
-  ggplot(aes(Negative)) +
-  geom_histogram(binwidth = 100)
-
-positivity_wide %>% 
+positivity %>% 
   ggplot(aes(Positivity)) +
   geom_histogram(binwidth = 0.005)
 
-# sapply(positivity_wide, function(x) sum(is.na(x)))
+# sapply(positivity, function(x) sum(is.na(x)))
 ```
 
 
 ```{r}
 # model_time_day_01 <- gam(c(Positive, Negative) ~  s(Day), 
-#                           data = positivity_wide, 
+#                           data = positivity, 
 #                           family = binomial(link = "logit"))
 
 model_time_day_01 <- gam(Positivity ~  s(Day, bs = 'cs', k = 28), 
-                         data = positivity_wide, 
+                         data = positivity, 
                          family = scat(link = "identity"))
 
 model_time_day_02 <- gam(Positivity ~  s(Day, bs = 'cs', k = 28) +
-                           weekend, 
-                         data = positivity_wide, 
+                           Weekend, 
+                         data = positivity, 
                          family = scat(link = "identity"))
 ```
 

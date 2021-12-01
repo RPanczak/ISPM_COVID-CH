@@ -1,7 +1,7 @@
 # data from 
 # https://www.bag.admin.ch/bag/en/home/krankheiten/ausbrueche-epidemien-pandemien/aktuelle-ausbrueche-epidemien/novel-cov/situation-schweiz-und-international.html
 # updated
-# 2021-11-23
+# 2021-12-01
 
 set.seed(12345)
 library(readxl)
@@ -28,7 +28,7 @@ cases <- read_csv("data-raw/BAG-open/sources-csv/COVID19Cases_geoRegion.csv") %>
          mean7d
   )
 
-write_rds(cases, "data/BAG-open/cases.rds")
+write_rds(cases, "data/BAG-open/cases.Rds")
 
 deaths <- read_csv("data-raw/BAG-open/sources-csv/COVID19Death_geoRegion.csv") %>% 
   select(geoRegion, datum, 
@@ -37,7 +37,7 @@ deaths <- read_csv("data-raw/BAG-open/sources-csv/COVID19Death_geoRegion.csv") %
          mean7d
   )
 
-write_rds(deaths, "data/BAG-open/deaths.rds")
+write_rds(deaths, "data/BAG-open/deaths.Rds")
 
 tests <- read_csv("data-raw/BAG-open/sources-csv/COVID19Test_geoRegion_all.csv") %>% 
   select(geoRegion, datum, 
@@ -46,8 +46,10 @@ tests <- read_csv("data-raw/BAG-open/sources-csv/COVID19Test_geoRegion_all.csv")
          pos_anteil, pos_anteil_mean7d
   )
 
-write_rds(tests, "data/BAG-open/tests.rds")
+write_rds(tests, "data/BAG-open/tests.Rds")
 
+unlink("data-raw/BAG-open/sources-csv.zip")
+unlink("data-raw/BAG-open/sources-csv", recursive = TRUE)
 
 # COVID19Hosp_geoRegion.csv
 # COVID19HospCapacity_geoRegion.csv
@@ -75,7 +77,7 @@ write_rds(tests, "data/BAG-open/tests.rds")
 # 
 # file.remove("data-raw/BAG-open/Dashboard_3_COVID19_labtests_positivity.xlsx")
 # 
-# write_rds(positivity, "data/BAG-open/positivity.rds")
+# write_rds(positivity, "data/BAG-open/positivity.Rds")
 # 
 # # #####################
 # 
@@ -120,7 +122,7 @@ write_rds(tests, "data/BAG-open/tests.rds")
 #          deaths = case_death_1, 
 #          cases = fallklasse_3) 
 # 
-# write_rds(deaths_cases, "data/BAG-open/deaths_cases.rds")
+# write_rds(deaths_cases, "data/BAG-open/deaths_cases.Rds")
 # 
 # zip(zipfile = "data-raw/BAG-open/Data on laboratory findings and deaths", 
 #     files = "data-raw/BAG-open/Data on laboratory findings and deaths.csv")
@@ -139,4 +141,4 @@ write_rds(tests, "data/BAG-open/tests.rds")
 #          age_group = Alterklasse,
 #          sex = Geschlecht) 
 # 
-# write_rds(population, "data/BAG-open/population.rds")
+# write_rds(population, "data/BAG-open/population.Rds")

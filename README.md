@@ -7,3 +7,7 @@ Data avaialble from dashboard [COVID-⁠19 Switzerlan. Information on the curren
 
 Cantonal boundaries from [swisstopo](https://shop.swisstopo.admin.ch/en/products/landscape/boundaries3D) and [FSO](https://www.bfs.admin.ch/bfs/en/home/services/geostat/swiss-federal-statistics-geodata/administrative-boundaries/generalized-boundaries-local-regional-authorities.html).
 
+[![CC BY-NC-SA 4.0][cc-by-nc-sa-image]][cc-by-nc-sa]
+
+[cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
+[cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png

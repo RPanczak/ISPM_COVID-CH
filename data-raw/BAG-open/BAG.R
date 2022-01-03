@@ -1,7 +1,7 @@
 # data from 
 # https://www.bag.admin.ch/bag/en/home/krankheiten/ausbrueche-epidemien-pandemien/aktuelle-ausbrueche-epidemien/novel-cov/situation-schweiz-und-international.html
 # updated
-# 2021-12-01
+# 2022-01-03
 
 set.seed(12345)
 library(readxl)
@@ -42,7 +42,7 @@ write_rds(deaths, "data/BAG-open/deaths.Rds")
 tests <- read_csv("data-raw/BAG-open/sources-csv/COVID19Test_geoRegion_all.csv") %>% 
   select(geoRegion, datum, 
          pop, 
-         entries, entries_pos,
+         entries, entries_pos, entries_neg, 
          pos_anteil, pos_anteil_mean7d
   )
 

@@ -75,9 +75,8 @@ tests %>%
 tests %>% 
   # filter(Date < as.Date("2021-01-18")) %>% 
   ggplot(aes(x = Date)) + 
-  geom_col(aes(y = pos_anteil), alpha = 5/10, linetype = 0) + 
-  geom_line(aes(y = pos_anteil_mean7d), color = "darkred") + 
-  xlab("") + ylab("Number of tests") 
+  geom_col(aes(y = entries), alpha = 5/10, linetype = 0) + 
+  xlab("") + ylab("Test positivity") 
 ```
 
 <!-- ------------------------------------------------------------ --> 

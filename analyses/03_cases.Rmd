@@ -46,7 +46,6 @@ p_load(dplyr, tidyr, readr, scales, ggplot2,
 ```{r}
 cases <- read_rds("data/BAG-open/cases.rds") %>% 
   filter(geoRegion == "CH") %>% 
-  # mutate(cases_7d = zoo::rollmean(entries, k = 7, fill = NA)) %>% 
   mutate(Weekend = chron::is.weekend(datum)) 
 ```
 

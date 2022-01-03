@@ -74,10 +74,9 @@ positivity %>%
 
 ```{r echo=FALSE, layout="l-body-outset"}
 positivity %>% 
-  mutate(Positivity_07da = zoo::rollmean(Positivity, k = 7, fill = NA)) %>% 
   ggplot(aes(x = Date)) + 
-  geom_col(aes(y = Positivity), alpha = 5/10, linetype = 0) + 
-  geom_line(aes(y = Positivity_07da), color = "red") + 
+  geom_col(aes(y = pos_anteil), alpha = 5/10, linetype = 0) + 
+  geom_line(aes(y = pos_anteil_mean7d), color = "red") + 
   xlab("") + ylab("Positivity")
 ```
 

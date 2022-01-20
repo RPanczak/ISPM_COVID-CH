@@ -64,7 +64,17 @@ cases %>%
 cases %>% 
   ggplot(aes(x = datum)) + 
   geom_col(aes(y = entries), alpha = 5/10, linetype = 0) + 
-  # geom_line(aes(y = cases_7d), color = "red") + 
+  geom_line(aes(y = mean7d), color = "red") + 
+  theme_void()
+
+cases %>% 
+  ggplot(aes(x = datum)) + 
+  geom_col(aes(y = entries), alpha = 5/10, linetype = 0) + 
+  theme_void()
+
+cases %>% 
+  ggplot(aes(x = datum)) + 
+  geom_line(aes(y = mean7d), color = "red") + 
   theme_void()
 ```
 

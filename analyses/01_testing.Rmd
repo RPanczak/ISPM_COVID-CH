@@ -69,14 +69,14 @@ tests %>%
   filter(Date == as.Date("2020-02-24"))
 ```
 
-## 7 day rolling average
+## Tests daily
 
 ```{r echo=FALSE, layout="l-body-outset"}
 tests %>% 
   # filter(Date < as.Date("2021-01-18")) %>% 
   ggplot(aes(x = Date)) + 
   geom_col(aes(y = entries), alpha = 5/10, linetype = 0) + 
-  xlab("") + ylab("Test positivity") 
+  xlab("") + ylab("Tests") 
 ```
 
 <!-- ------------------------------------------------------------ --> 

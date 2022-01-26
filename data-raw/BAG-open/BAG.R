@@ -1,7 +1,7 @@
 # data from 
 # https://www.bag.admin.ch/bag/en/home/krankheiten/ausbrueche-epidemien-pandemien/aktuelle-ausbrueche-epidemien/novel-cov/situation-schweiz-und-international.html
 # updated
-# 2022-01-19
+# 2022-01-26
 
 set.seed(12345)
 library(readxl)

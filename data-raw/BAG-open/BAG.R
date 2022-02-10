@@ -1,20 +1,20 @@
 # data from 
 # https://www.bag.admin.ch/bag/en/home/krankheiten/ausbrueche-epidemien-pandemien/aktuelle-ausbrueche-epidemien/novel-cov/situation-schweiz-und-international.html
 # updated
-# 2022-01-26
+# 2022-02-09
 
 set.seed(12345)
 library(readxl)
 library(dplyr)
 library(readr)
+library(lubridate)
 
 
 # #####################
 
 # alternative source for ind files
 # https://opendata.swiss/en/dataset/covid-19-schweiz
-
-download.file(url = "https://www.covid19.admin.ch/api/data/20211115-ew84xikb/downloads/sources-csv.zip",
+download.file(url = "https://www.covid19.admin.ch/api/data/20220209-o60vrn5s/downloads/sources-csv.zip",
               destfile = "data-raw/BAG-open/sources-csv.zip",
               method = "curl")
 
@@ -26,7 +26,8 @@ cases <- read_csv("data-raw/BAG-open/sources-csv/COVID19Cases_geoRegion.csv") %>
          pop, 
          entries, sumTotal,
          mean7d
-  )
+  ) %>% 
+  filter(datum < ymd("2022-02-09"))
 
 write_rds(cases, "data/BAG-open/cases.Rds")
 
@@ -35,7 +36,8 @@ deaths <- read_csv("data-raw/BAG-open/sources-csv/COVID19Death_geoRegion.csv") %
          pop, 
          entries, sumTotal,
          mean7d
-  )
+  ) %>% 
+  filter(datum < ymd("2022-02-09"))
 
 write_rds(deaths, "data/BAG-open/deaths.Rds")
 
@@ -44,7 +46,8 @@ tests <- read_csv("data-raw/BAG-open/sources-csv/COVID19Test_geoRegion_all.csv")
          pop, 
          entries, entries_pos, entries_neg, 
          pos_anteil, pos_anteil_mean7d
-  )
+  ) %>% 
+  filter(datum < ymd("2022-02-09"))
 
 write_rds(tests, "data/BAG-open/tests.Rds")
 

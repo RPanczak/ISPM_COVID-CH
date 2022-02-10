@@ -59,25 +59,6 @@ cases %>%
   xlab("") + ylab("Cases") + theme_bw()
 ```
 
-```{r include=FALSE}
-# image for hex on website
-cases %>% 
-  ggplot(aes(x = datum)) + 
-  geom_col(aes(y = entries), alpha = 5/10, linetype = 0) + 
-  geom_line(aes(y = mean7d), color = "red") + 
-  theme_void()
-
-cases %>% 
-  ggplot(aes(x = datum)) + 
-  geom_col(aes(y = entries), alpha = 5/10, linetype = 0) + 
-  theme_void()
-
-cases %>% 
-  ggplot(aes(x = datum)) + 
-  geom_line(aes(y = mean7d), color = "red") + 
-  theme_void()
-```
-
 ## Cumulative
 
 ```{r echo=FALSE, layout="l-body-outset"}

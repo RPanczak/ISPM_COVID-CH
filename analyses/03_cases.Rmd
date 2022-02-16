@@ -1,7 +1,7 @@
 ---
 title: "COVID-CH project"
 description: "Analyses of FOPH data - cases"
-date: "`r Sys.Date()`"
+date: "`r Sys.datum()`"
 author:
   - name: Radoslaw Panczak 
     url: https://github.com/RPanczak
@@ -36,7 +36,8 @@ set.seed(12345)
 library(pacman) 
 p_load(dplyr, tidyr, readr, scales, ggplot2,
        sjmisc, sjPlot,
-       mgcv, gratia)
+       mgcv, gratia,
+       gamlss)
 ```
 
 <!-- ------------------------------------------------------------ --> 
@@ -67,3 +68,55 @@ cases %>%
   geom_col(aes(y = sumTotal), alpha = 5/10, linetype = 0) + 
   xlab("") + ylab("Cumulative cases") + theme_bw()
 ```
+
+<!-- ------------------------------------------------------------ --> 
+
+# Time adjusted GAM models of daily cases
+
+```{r}
+min_date <- as.numeric(min(cases$datum))
+
+cases %<>% 
+  # filter(Week > 4) %>% 
+  arrange(datum) %>% 
+  mutate(Day = as.numeric(datum) - min_date + 1)
+
+cases %>% 
+  ggplot(aes(entries)) +
+  geom_histogram(binwidth = 10)
+
+# sapply(cases, function(x) sum(is.na(x)))
+```
+
+```{r}
+model_time_day_01 <- gam(entries ~  s(Day, bs = 'cs', k = 28), 
+                         data = cases, 
+                         family = scat(link = "identity"))
+
+model_time_day_02 <- gam(entries ~  s(Day, bs = 'cs', k = 28) +
+                           Weekend, 
+                         data = cases, 
+                         family = scat(link = "identity"))
+```
+
+```{r}
+AIC(model_time_day_01, model_time_day_02)
+
+summary(model_time_day_01)$sp.criterion
+summary(model_time_day_02)$sp.criterion
+
+summary(model_time_day_01)$r.sq
+summary(model_time_day_02)$r.sq
+
+anova(model_time_day_01, model_time_day_02, test="Chisq")
+```
+
+```{r, layout="l-body-outset"}
+summary(model_time_day_02)
+# gam.check(model_time_day_01)
+# plot(model_time_day_01, pages=1)
+
+draw(model_time_day_02)
+appraise(model_time_day_02)
+```
+

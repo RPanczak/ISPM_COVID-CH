@@ -1,7 +1,7 @@
 # data from 
 # https://www.bag.admin.ch/bag/en/home/krankheiten/ausbrueche-epidemien-pandemien/aktuelle-ausbrueche-epidemien/novel-cov/situation-schweiz-und-international.html
 # updated
-# 2022-02-09
+# 2022-02-16
 
 set.seed(12345)
 library(readxl)
@@ -14,7 +14,7 @@ library(lubridate)
 
 # alternative source for ind files
 # https://opendata.swiss/en/dataset/covid-19-schweiz
-download.file(url = "https://www.covid19.admin.ch/api/data/20220209-o60vrn5s/downloads/sources-csv.zip",
+download.file(url = "https://www.covid19.admin.ch/api/data/20220216-i4f5f0q1/downloads/sources-csv.zip",
               destfile = "data-raw/BAG-open/sources-csv.zip",
               method = "curl")
 

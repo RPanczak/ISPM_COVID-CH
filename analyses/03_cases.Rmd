@@ -120,3 +120,26 @@ draw(model_time_day_02)
 appraise(model_time_day_02)
 ```
 
+<!-- ------------------------------------------------------------ --> 
+
+# Time adjusted GAMLSS models of daily cases
+
+```{r}
+data <- cases %>% 
+  dplyr::select(entries, Day, Weekend)
+
+model_time_day_01 <- gamlss(entries ~ pb(Day),
+                            sigma.formula= ~ pb(Day),
+                            data = data,
+                            family = SHASHo())
+
+plot(model_time_day_01)
+
+model_time_day_02 <- gamlss(entries ~ pb(Day) + Weekend,
+                            sigma.formula= ~ pb(Day),
+                            data = data,
+                            family = SHASHo())
+
+plot(model_time_day_02)
+```
+
